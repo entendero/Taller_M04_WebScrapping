@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notícies RSS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 80%;
+    }
+    .noticia {
+      width: 30%;
+      padding: 10px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .noticia h2 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    .noticia img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 10px;
+    }
+    .noticia p {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Estilos para el cuadro de búsqueda */
+    #search-container {
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background-color: #fff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #search-input {
+      width: 200px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    #search-button {
+      padding: 5px 10px;
+      background-color: #007bff;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      border-radius: 3px;
+    }
+    footer {
+      background-color: blue;
+      height: 300px; 
+      color: #fff;
+      padding: 20px 0;
+      clear: both; /* Asegura que el footer salte a una nueva línea */
+    }
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    .footer-links a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 24px; /* Tamaño de fuente ajustado */
+    }
+    .social-icons {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .social-icons li {
+      display: inline-block;
+      margin-left: 10px;
+    }
+    .social-icons a {
+      color: #fff; /* Color azul claro */
+      font-size: 48px; /* Tamaño de ícono aumentado */
+    }
+   #autor {
+  display: block;
+  text-align: center; /* Para centrar el texto */
+  font-size: 20px; /* Tamaño de fuente más grande */
+}
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const rssUrl = 'https://feeds.bbci.co.uk/news/rss.xml';
+      const container = document.getElementById('noticies');
+
+      fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(rssUrl))
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok.');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(data.contents, 'text/xml');
+          const items = xmlDoc.querySelectorAll('item');
+          
+          items.forEach(item => {
+            const title = item.querySelector('title').textContent;
+            const description = item.querySelector('description').textContent;
+            let image = null;
+            
+            // Buscar la imagen dentro del contenido de la descripción
+            const matches = description.match(/<img.*?src=["'](.*?)["']/);
+            if (matches && matches.length > 1) {
+              image = matches[1];
+            }
+            
+            console.log('Imagen:', image); // Agregar esta línea para depurar
+
+            const noticiaDiv = document.createElement('div');
+            noticiaDiv.classList.add('noticia');
+
+            const titleHeading = document.createElement('h2');
+            titleHeading.textContent = title;
+
+            const imageElement = document.createElement('img');
+            if (image) {
+              imageElement.src = image;
+            } else {
+              imageElement.style.display = 'none';
+            }
+
+            const descriptionParagraph = document.createElement('p');
+            descriptionParagraph.textContent = description.substring(0, 100) + '...';
+
+            noticiaDiv.appendChild(titleHeading);
+            noticiaDiv.appendChild(imageElement);
+            noticiaDiv.appendChild(descriptionParagraph);
+
+            container.appendChild(noticiaDiv);
+          });
+        })
+        .catch(error => console.error('Error fetching RSS feed:', error));
+
+      // Función para realizar la búsqueda
+      function buscar() {
+        var palabra = document.getElementById('search-input').value.toLowerCase();
+        var noticias = document.getElementsByClassName('noticia');
+
+        for (var i = 0; i < noticias.length; i++) {
+          var contenido = noticias[i].textContent.toLowerCase();
+          if (contenido.includes(palabra)) {
+            noticias[i].style.display = 'block';
+          } else {
+            noticias[i].style.display = 'none';
+          }
+        }
+      }
+
+      // Event listener para el botón de búsqueda
+      document.getElementById('search-button').addEventListener('click', buscar);
+
+      // Event listener para la tecla "Enter" en la caja de búsqueda
+      document.getElementById('search-input').addEventListener('keypress', function(event) {
+        if (event.keyCode === 13) {
+          buscar();
+        }
+      });
+    });
+
+    // Codi per llegir dades Cryptomonedes i mostrar amb desplaçament 
+
+       // Función para realizar la solicitud a la API de Binance
+       function fetchCryptoPrices() {
+            const topCryptos = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'ADAUSDT', 'XRPUSDT', 'DOTUSDT', 'DOGEUSDT', 'AVAXUSDT', 'LUNAUSDT'];
+            fetch('https://api.binance.com/api/v3/ticker/price')
+            .then(response => response.json())
+            .then(data => {
+                const cryptoTicker = document.getElementById('marquee');
+                let moneda = ""; 
+
+                // Recorrer los datos de la respuesta JSON
+                data.forEach(crypto => {
+                    const symbol0 = crypto.symbol;
+                    const price0 = crypto.price;
+                    const price = parseFloat(price0).toString();
+                    
+                    // Verificar si el símbolo está en la lista de las 10 principales criptomonedas
+                    if (topCryptos.includes(symbol0)) {
+                        // Crear un elemento para cada criptomoneda y precio
+                        const symbol = symbol0.replace(/USDT$/, ""); // Eliminar los últimos 4 caracteres (USDT)
+                        moneda += `<strong>${symbol}</strong>: ${price} &emsp; &emsp; `; // Concatenar el contenido
+                    }
+                });
+
+                const mostra = `<marquee onmouseover="this.stop();" onmouseout="this.start();" id="scroll">${moneda}</marquee>`; 
+
+                // Insertar el contenido HTML dentro del marquee
+                cryptoTicker.innerHTML = mostra;  
+                
+            })
+            .catch(error => {
+                console.error('Error al recuperar los datos:', error);
+            });
+        }
+
+        // Llamar a la función al cargar la página
+        fetchCryptoPrices();
+
+        // Actualizar las cotizaciones cada X segundos
+        setInterval(fetchCryptoPrices, 20000); // Cambiar 20000 por el intervalo deseado en milisegundos
+  </script>
+</head>
+<body>
+  <div id="search-container">
+    <input type="text" id="search-input" placeholder="Buscar...">
+    <button id="search-button">Buscar</button>
+  </div>
+  <div id="marquee">
+    <marquee id="cryptoTicker" onmouseover="this.stop();" onmouseout="this.start();" id='scroll'> Cotitzacions criptomonedes 
+    </marquee>          
+    </div>
+  <div class="container" id="noticies"></div>
+<!-- Footer -->
+<div id="peu">
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="footer-links">
+            <li><a href="#">Inici</a></li>
+            <li><a href="#">Noticies</a></li>
+            <li><a href="#">Podcast</a></li>
+            <li><a href="#">Contactes</a></li>
+            <li><a href="#">API</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="social-icons">
+            <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+            <li><a href="#"><i class="fas fa-rss"></i></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <span id="autor">(c) 2024 Noticies al minut</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
